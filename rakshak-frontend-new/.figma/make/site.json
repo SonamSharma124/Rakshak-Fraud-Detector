@@ -1,0 +1,10 @@
+{
+  "description": "A cybersecurity dashboard that clearly presents detection results and analysis with a clean, intuitive interface designed for security professionals.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

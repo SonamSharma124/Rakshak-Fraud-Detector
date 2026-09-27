@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Temporary test files
+temp_*
+*.tmp
+
+# Node
+node_modules/
+dist/
+
+# Vite
+.vite/
+
+# Chroma / local runtime database
+rakshak-backend/scam_db/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Rakshak local runtime / test artifacts
+rakshak-backend/traces.db
+rakshak-backend/test_*.png
+rakshak-backend/test_*.wav
