@@ -16,7 +16,7 @@ for pattern in SCAM_PATTERNS:
     )
     embedding = response["embedding"]
     
-    collection.add(
+    collection.upsert(
         ids=[pattern["id"]],
         embeddings=[embedding],
         documents=[pattern["text"]]

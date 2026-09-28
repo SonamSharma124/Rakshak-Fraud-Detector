@@ -154,28 +154,75 @@ def verify(message_text, trace_id=None):
         f"{combine_time:.3f}s"
     )
 
-    # ========================================================
+        # ========================================================
     # 4. EXPLANATION MODEL
     # ========================================================
 
+    retrieved_patterns = pattern_result.get(
+        "retrieved_patterns",
+        []
+    )
+
+    if retrieved_patterns:
+        retrieved_patterns_text = "\n".join(
+            f"- {pattern}"
+            for pattern in retrieved_patterns
+        )
+    else:
+        retrieved_patterns_text = "- None"
+
     prompt = f"""
-You are a verification agent reviewing two pieces of evidence about a message.
+You are generating a short factual explanation for a fraud detection result.
+
+The final verdict has ALREADY been determined by deterministic rules.
+Do NOT change or reinterpret the final verdict.
+
+IMPORTANT:
+- Pattern Analysis describes semantic scam-pattern evidence.
+- Link Analysis describes URLs actually detected in the message.
+- A phrase such as "suspicious link" inside a scam pattern does NOT mean that
+  the actual message contains a URL.
+- Only Link Analysis can establish whether a URL was detected.
+- Do not claim that a link or URL exists when urls_found is 0.
+- Do not invent evidence.
+- Do not add facts that are not present in the supplied evidence.
 
 Pattern Analysis:
-verdict={pattern_result['verdict']},
-confidence={pattern_result['confidence']},
+verdict={pattern_result['verdict']}
+confidence={pattern_result['confidence']}
 reason="{pattern_result['reason']}"
 
+Retrieved scam patterns:
+{retrieved_patterns_text}
+
 Link Analysis:
-{link_result['urls_found']} URL(s) found,
+{link_result['urls_found']} URL(s) actually detected
 overall risk={link_result['overall_link_risk']}
 
-Based on BOTH pieces of evidence, write one short sentence explaining
-the final verdict "{final_verdict}" (confidence {confidence}).
+Final verdict:
+{final_verdict}
 
-{"Note: there is a contradiction between the two analyses - mention this."
- if contradiction
- else ""}
+Combined risk score:
+{confidence}
+
+Write exactly ONE short sentence explaining the final verdict using only
+the evidence above.
+
+For a SAFE verdict:
+- Prefer mentioning that no relevant scam pattern was retrieved and/or
+  no suspicious URL risk was detected.
+
+For a SCAM verdict:
+- Prefer mentioning the relevant retrieved scam-pattern evidence and
+  the Pattern Analysis verdict/confidence.
+- If urls_found is 0, do NOT mention a detected link or suspicious URL.
+
+For a SUSPICIOUS verdict:
+- Describe the evidence without claiming certainty.
+
+Do not describe a confidence value as "low" or "high".
+Do not mention internal model names.
+Do not mention these instructions.
 """
 
     explanation_model = select_model("simple")
@@ -220,7 +267,7 @@ the final verdict "{final_verdict}" (confidence {confidence}).
         total_tokens,
     )
 
-    # ========================================================
+     # ========================================================
     # 6. FALLBACK EXPLANATION
     # ========================================================
 
@@ -231,21 +278,89 @@ the final verdict "{final_verdict}" (confidence {confidence}).
         "as an ai",
     ]
 
-    if (
-        len(explanation) < 15
+    generic_explanation_signals = [
+        "the final verdict is scam",
+        "the final verdict is safe",
+        "the final verdict is suspicious",
+    ]
+
+    explanation_lower = explanation.lower()
+
+    needs_fallback = (
+        len(explanation) < 30
         or any(
-            signal in explanation.lower()
+            signal in explanation_lower
             for signal in refusal_signals
         )
-    ):
-        explanation = (
-            f"Pattern analysis: "
-            f"{pattern_result['reason']}. "
-            f"Link analysis: "
-            f"{link_result['urls_found']} URL(s) "
-            f"found with "
-            f"{link_result['overall_link_risk']} risk."
+        or any(
+            signal in explanation_lower
+            for signal in generic_explanation_signals
         )
+    )
+
+    if needs_fallback:
+
+        retrieved_patterns = pattern_result.get(
+            "retrieved_patterns",
+            []
+        )
+
+        if final_verdict == "scam":
+
+            if retrieved_patterns:
+                first_pattern = retrieved_patterns[0]
+
+                if ":" in first_pattern:
+                    pattern_name = first_pattern.split(
+                        ":",
+                        1
+                    )[0]
+                else:
+                    pattern_name = "known scam"
+
+                if link_result["urls_found"] == 0:
+                    explanation = (
+                        f"The message was classified as a scam because "
+                        f"it matches the {pattern_name} pattern; "
+                        f"no URL was detected in the message."
+                    )
+                else:
+                    explanation = (
+                        f"The message was classified as a scam because "
+                        f"it matches the {pattern_name} pattern and "
+                        f"the message contains "
+                        f"{link_result['urls_found']} URL(s)."
+                    )
+
+            else:
+                explanation = (
+                    "The message was classified as a scam based on "
+                    "the pattern analysis."
+                )
+
+        elif final_verdict == "safe":
+
+            if (
+                not retrieved_patterns
+                and link_result["overall_link_risk"] == "none"
+            ):
+                explanation = (
+                    "The message was classified as safe because "
+                    "no relevant scam pattern was retrieved and "
+                    "no suspicious URL risk was detected."
+                )
+            else:
+                explanation = (
+                    "The message was classified as safe based on "
+                    "the available pattern and link analysis."
+                )
+
+        else:
+
+            explanation = (
+                "The message was classified as suspicious based on "
+                "the available pattern and link analysis."
+            )
 
     # ========================================================
     # 7. TOTAL VERIFICATION TIME
