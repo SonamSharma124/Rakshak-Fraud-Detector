@@ -43,6 +43,7 @@ def process(input_data, is_file_path=False):
 
         "final_verdict": verification_result["final_verdict"],
         "confidence": verification_result["confidence"],
+        "risk_score": verification_result["risk_score"],
         "contradiction_detected": verification_result[
             "contradiction_detected"
         ],

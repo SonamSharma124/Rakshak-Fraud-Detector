@@ -142,7 +142,7 @@ def verify(message_text, trace_id=None):
 
     combine_start = time.perf_counter()
 
-    final_verdict, confidence, contradiction = combine_verdicts(
+    final_verdict, risk_score, contradiction = combine_verdicts(
         pattern_result,
         link_result,
     )
@@ -203,7 +203,7 @@ Final verdict:
 {final_verdict}
 
 Combined risk score:
-{confidence}
+{risk_score}
 
 Write exactly ONE short sentence explaining the final verdict using only
 the evidence above.
@@ -387,7 +387,11 @@ Do not mention these instructions.
     return {
         "final_verdict": final_verdict,
 
-        "confidence": confidence,
+        # Pattern Agent confidence.
+        "confidence": pattern_result["confidence"],
+
+        # Deterministic combined scam-risk score.
+        "risk_score": risk_score,
 
         "contradiction_detected": contradiction,
 
