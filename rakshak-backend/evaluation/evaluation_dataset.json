@@ -1,0 +1,253 @@
+[
+  {
+    "id": 1,
+    "message": "Your bank account will be blocked today. Complete KYC immediately at http://bank-kyc.example/verify.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 2,
+    "message": "Congratulations! You have won a lottery prize of Rs 5,00,000. Pay the processing fee to claim your reward.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 3,
+    "message": "Your UPI account will be suspended unless you verify your details immediately using the link provided.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 4,
+    "message": "You have been selected for a work-from-home job. Pay a registration fee to activate your employee account.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 5,
+    "message": "Your credit card has been temporarily blocked. Share your OTP with our verification executive to reactivate it.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 6,
+    "message": "URGENT: Your PAN details need immediate verification or your bank services will be stopped. Click the attached link now.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 7,
+    "message": "Your digital wallet KYC has expired. Complete KYC within 30 minutes or your wallet will be permanently blocked.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 8,
+    "message": "Your electricity subsidy is ready for collection. Pay Rs 199 verification charges to receive the amount today.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 9,
+    "message": "A parcel is waiting for delivery. Pay a small customs fee through this link to avoid cancellation.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 10,
+    "message": "Your insurance policy is expiring today. Make an immediate payment through the provided link to keep the policy active.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 11,
+    "message": "Your SIM card will be deactivated within 24 hours. Update your KYC details using the verification link.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 12,
+    "message": "Your bank reward points are expiring today. Click here and provide your card details to redeem them.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 13,
+    "message": "Your FASTag account requires immediate reactivation. Pay the pending verification amount using the link below.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 14,
+    "message": "Congratulations, you have been selected for an exclusive investment opportunity. Transfer Rs 10,000 today to unlock guaranteed returns.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 15,
+    "message": "Your bank security team detected suspicious activity. Send the OTP received on your phone to cancel the transaction.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 16,
+    "message": "Complete your KYC update within the next hour or your mutual fund account will be frozen. Use the link to continue.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 17,
+    "message": "You have an unpaid traffic penalty. Pay immediately through the link below or additional legal charges will apply.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 18,
+    "message": "Your mobile number has been selected for a cash reward. Pay the refundable security deposit to receive the prize.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 19,
+    "message": "Your online shopping account has been locked. Confirm your card number, CVV and OTP to restore access.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 20,
+    "message": "Your salary account verification is pending. Send your ATM PIN and OTP to the payroll team to avoid salary delay.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 21,
+    "message": "A government benefit payment is waiting for you. Pay the required release fee before midnight to receive the money.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 22,
+    "message": "Your account has been selected for a special credit limit increase. Confirm your full card details through the attached form.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 23,
+    "message": "Your KYC verification failed. Re-submit your Aadhaar and banking details through this urgent verification link.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 24,
+    "message": "Your crypto investment account will be closed today unless you transfer the required activation amount immediately.",
+    "expected_label": "scam"
+  },
+  {
+    "id": 25,
+    "message": "Your courier delivery is on hold because of an address problem. Pay Rs 50 through the link immediately to reschedule delivery.",
+    "expected_label": "scam"
+  },
+
+  {
+    "id": 26,
+    "message": "Your grocery order has been delivered successfully. Thank you for shopping with us.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 27,
+    "message": "Hey, are we still meeting for lunch tomorrow at 1 PM?",
+    "expected_label": "safe"
+  },
+  {
+    "id": 28,
+    "message": "The office maintenance team will inspect the air-conditioning system tomorrow morning.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 29,
+    "message": "Your monthly bank statement is now available in the official banking application.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 30,
+    "message": "Your electricity bill of Rs 1,245 is due on 5 October. Please pay through your usual electricity provider.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 31,
+    "message": "Your KYC documents were successfully verified. No further action is required at this time.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 32,
+    "message": "Your account security settings were updated successfully from the mobile banking application.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 33,
+    "message": "Your parcel has been dispatched and is expected to arrive tomorrow.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 34,
+    "message": "Your payment of Rs 850 to the electricity provider was completed successfully.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 35,
+    "message": "The HR team has scheduled your annual employee verification for Monday at 10 AM.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 36,
+    "message": "Your mutual fund statement for September is available in your investment account.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 37,
+    "message": "Your debit card will expire next month. Please request a replacement through your bank's official application.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 38,
+    "message": "Your UPI payment of Rs 500 to the restaurant was successful.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 39,
+    "message": "The delivery partner attempted delivery today but nobody was available. Please reschedule from the official shopping application.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 40,
+    "message": "Your insurance policy renewal is due next month. You can review the renewal details in your official account.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 41,
+    "message": "The company has completed its annual employee KYC review. Your records are up to date.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 42,
+    "message": "Your bank has received your address-change request and will process it within three working days.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 43,
+    "message": "Your credit card payment of Rs 3,200 has been received. Your outstanding balance has been updated.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 44,
+    "message": "Your FASTag balance is Rs 420. Recharge it through the official FASTag application when convenient.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 45,
+    "message": "The school administration has requested updated contact information for the annual student records review.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 46,
+    "message": "Your account verification appointment is scheduled for Friday at 3 PM. Please bring the requested documents.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 47,
+    "message": "The payment portal is currently undergoing scheduled maintenance. Please try again later.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 48,
+    "message": "Your online order has been cancelled because the requested item is no longer available.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 49,
+    "message": "The HR department has sent a reminder to complete the annual compliance training before Friday.",
+    "expected_label": "safe"
+  },
+  {
+    "id": 50,
+    "message": "Your bank has published a security advisory reminding customers never to share OTPs, PINs or passwords.",
+    "expected_label": "safe"
+  }
+]
