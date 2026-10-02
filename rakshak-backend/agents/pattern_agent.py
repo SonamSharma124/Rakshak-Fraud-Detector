@@ -108,20 +108,32 @@ REASON GROUNDING RULES:
         )
     # Prevent unsupported URL/link claims when the actual message
 # does not contain a URL.
+    reason = result.get("reason", "")
     if "http://" not in message_text.lower() and "https://" not in message_text.lower():
-        reason = result.get("reason", "")
 
-        reason = reason.replace("verification link", "verification request")
-        reason = reason.replace("verification links", "verification requests")
-        reason = reason.replace("suspicious link", "suspicious request")
-        reason = reason.replace("suspicious links", "suspicious requests")
+        reason = reason.replace(
+             "verification link",
+             "verification request"
+             )
+        reason = reason.replace(
+             "verification links",
+             "verification requests"
+             )
+        reason = reason.replace(
+             "suspicious link",
+             "suspicious request"
+             )
+        reason = reason.replace(
+             "suspicious links",
+             "suspicious requests"
+             )
 
-        result["reason"] = reason
-        result["retrieved_patterns"] = similar_patterns
-        result["pattern_model_used"] = pattern_model
+    result["reason"] = reason
+    result["retrieved_patterns"] = similar_patterns
+    result["pattern_model_used"] = pattern_model
 
-        groundedness_score, matched_keywords = calculate_groundedness(result["reason"], similar_patterns)
-        result["groundedness_score"] = groundedness_score
-        result["groundedness_matched_keywords"] = matched_keywords
+    groundedness_score, matched_keywords = calculate_groundedness(result["reason"], similar_patterns)
+    result["groundedness_score"] = groundedness_score
+    result["groundedness_matched_keywords"] = matched_keywords
 
-        return result
+    return result
