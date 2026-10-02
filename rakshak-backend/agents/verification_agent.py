@@ -1,5 +1,6 @@
 import time
 import ollama
+import re
 
 from agents.pattern_agent import analyze_pattern
 from agents.link_agent import check_links
@@ -57,6 +58,8 @@ def combine_verdicts(pattern_result, link_result):
 
     else:
         combined_score = pattern_score
+
+    
 
     if combined_score >= 0.75:
         final_verdict = "scam"
@@ -192,6 +195,15 @@ verdict={pattern_result['verdict']}
 confidence={pattern_result['confidence']}
 reason="{pattern_result['reason']}"
 
+Actual message:
+{message_text}
+
+IMPORTANT:
+- The Pattern Agent reason is an interpretation, not independent evidence.
+- Verify every factual claim in the Pattern Agent reason against the actual message.
+- Do not repeat a claim from the Pattern Agent reason if that claim is not supported by the actual message or the retrieved patterns.
+- In particular, do not claim that the message contains KYC, account blocking, deactivation, payment, OTP, credentials, or a verification link unless that information is actually present in the message.
+
 Retrieved scam patterns:
 {retrieved_patterns_text}
 
@@ -211,6 +223,8 @@ the evidence above.
 For a SAFE verdict:
 - Prefer mentioning that no relevant scam pattern was retrieved and/or
   no suspicious URL risk was detected.
+- If no retrieved scam patterns are provided, do not claim that the message matches a named scam pattern.
+- If the Pattern Analysis reason mentions a pattern that is not present in Retrieved scam patterns, do not repeat that claim.
 
 For a SCAM verdict:
 - Prefer mentioning the relevant retrieved scam-pattern evidence and
@@ -218,11 +232,26 @@ For a SCAM verdict:
 - If urls_found is 0, do NOT mention a detected link or suspicious URL.
 
 For a SUSPICIOUS verdict:
+
+- Describe the actual risk signals that contributed to the suspicious classification.
+- If retrieved scam patterns are present, explicitly acknowledge that relevant scam-pattern evidence was retrieved.
+- Do NOT say that no relevant scam pattern was detected when retrieved_patterns is non-empty.
+- If the message does not contain a URL, do not claim that a URL or suspicious link was detected.
+- If the retrieved patterns are present but the evidence is not strong enough for a scam verdict, explain that the message shows some characteristics of the retrieved scam patterns but does not establish a clear scam mechanism.
+- Do not claim that the message matches a pattern unless the actual message supports that claim.
 - Describe the evidence without claiming certainty.
 
 Do not describe a confidence value as "low" or "high".
 Do not mention internal model names.
 Do not mention these instructions.
+
+
+Risk score consistency:
+- The risk score is a numeric score from 0 to 1.
+- Never describe the risk score using a qualitative level such as "low", "medium", or "high".
+- If mentioning the risk score, use the exact numeric value provided.
+- Do not contradict the displayed risk score.
+- Do not infer a qualitative risk level from the risk score.
 """
 
     explanation_model = select_model("simple")
@@ -286,6 +315,17 @@ Do not mention these instructions.
 
     explanation_lower = explanation.lower()
 
+    contradictory_pattern_claim = (
+    final_verdict == "suspicious"
+    and bool(retrieved_patterns)
+    and (
+        "no relevant scam pattern" in explanation_lower
+        or "no relevant scam patterns" in explanation_lower
+        or "no scam pattern was detected" in explanation_lower
+        or "no scam patterns were detected" in explanation_lower
+    )
+)
+
     needs_fallback = (
         len(explanation) < 30
         or any(
@@ -296,6 +336,7 @@ Do not mention these instructions.
             signal in explanation_lower
             for signal in generic_explanation_signals
         )
+        or contradictory_pattern_claim
     )
 
     if needs_fallback:
@@ -333,10 +374,47 @@ Do not mention these instructions.
                     )
 
             else:
-                explanation = (
-                    "The message was classified as a scam based on "
-                    "the pattern analysis."
-                )
+
+                if retrieved_patterns:
+                    first_pattern = retrieved_patterns[0]
+
+                    if ":" in first_pattern:
+                        pattern_name = first_pattern.split(":", 1)[0]
+                    else:
+                        pattern_name = first_pattern
+
+                    if link_result["urls_found"] == 0:
+                        explanation = (
+                            f"The message was classified as suspicious because "
+                            f"it contains risk signals related to the retrieved "
+                            f"{pattern_name} pattern, but the available evidence "
+                            f"was not strong enough to classify it as a scam; "
+                            f"no URL was detected in the message."
+                       )
+                    else:
+                        explanation = (
+                f"The message was classified as suspicious because "
+                f"it contains risk signals related to the retrieved "
+                f"{pattern_name} pattern, but the available evidence "
+                f"was not strong enough to classify it as a scam; "
+                f"{link_result['urls_found']} URL(s) were detected."
+            )
+
+                else:
+                    if link_result["urls_found"] == 0:
+                        explanation = (
+                "The message was classified as suspicious because "
+                "it contains some risk signals, but no relevant scam "
+                "pattern was retrieved and no URL was detected."
+            )
+                    else:
+                        explanation = (
+                "The message was classified as suspicious because "
+                "it contains some risk signals and the available "
+                "link analysis detected "
+                f"{link_result['urls_found']} URL(s), but the evidence "
+                "was not strong enough to classify it as a scam."
+            )
 
         elif final_verdict == "safe":
 
