@@ -58,6 +58,7 @@ export interface BackendAnalysisResponse {
   input_text?: string
   final_verdict?: string
   confidence?: number
+  risk_score?: number
   contradiction_detected?: boolean
   explanation?: string
 

@@ -7,8 +7,34 @@ type Props = { result: AnalysisResult }
 export default function VerdictCard({ result }: Props) {
   const [copied, setCopied] = useState(false)
 
-  const isScam = result.verdict === 'SCAM'
-  const color  = isScam ? '#ef4444' : '#4ade80'
+  const verdict = String(result?.verdict ?? '')
+  .trim()
+  .toLowerCase()
+
+const isScam = verdict === 'scam'
+const isSuspicious = verdict === 'suspicious'
+const isSafe = verdict === 'safe'
+
+const color = isScam
+  ? '#ef4444'
+  : isSuspicious
+    ? '#facc15'
+    : isSafe
+      ? '#4ade80'
+      : '#94a3b8'
+
+const verdictLabel = isScam
+  ? 'SCAM'
+  : isSuspicious
+    ? 'SUSPICIOUS'
+    : isSafe
+      ? 'SAFE'
+      : 'UNKNOWN'
+
+const riskScoreDisplay =
+  typeof result.riskScore === 'number'
+    ? Math.round(result.riskScore * 100)
+    : null
 
   const copy = () => {
     navigator.clipboard.writeText(result.traceId).catch(() => {})
@@ -28,9 +54,23 @@ export default function VerdictCard({ result }: Props) {
       {/* Verdict card */}
       <div className="rounded-2xl overflow-hidden"
         style={{
-          background: isScam ? 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(15,22,41,0.95) 50%)' : 'linear-gradient(135deg, rgba(74,222,128,0.08) 0%, rgba(15,22,41,0.95) 50%)',
-          border:     `1px solid ${isScam ? 'rgba(239,68,68,0.25)' : 'rgba(74,222,128,0.25)'}`,
-          boxShadow:  isScam ? '0 0 40px rgba(239,68,68,0.15), 0 0 80px rgba(239,68,68,0.05)' : '0 0 40px rgba(34,197,94,0.15), 0 0 80px rgba(34,197,94,0.05)',
+          background: isScam
+  ? 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(15,22,41,0.95) 50%)'
+  : isSuspicious
+    ? 'linear-gradient(135deg, rgba(250,204,21,0.08) 0%, rgba(15,22,41,0.95) 50%)'
+    : 'linear-gradient(135deg, rgba(74,222,128,0.08) 0%, rgba(15,22,41,0.95) 50%)',
+          border: `1px solid ${
+  isScam
+    ? 'rgba(239,68,68,0.25)'
+    : isSuspicious
+      ? 'rgba(250,204,21,0.25)'
+      : 'rgba(74,222,128,0.25)'
+}`,
+          boxShadow: isScam
+  ? '0 0 40px rgba(239,68,68,0.15), 0 0 80px rgba(239,68,68,0.05)'
+  : isSuspicious
+    ? '0 0 40px rgba(250,204,21,0.15), 0 0 80px rgba(250,204,21,0.05)'
+    : '0 0 40px rgba(34,197,94,0.15), 0 0 80px rgba(34,197,94,0.05)',
         }}>
         <div className="p-8">
           <div className="flex items-start justify-between flex-wrap gap-6">
@@ -39,21 +79,88 @@ export default function VerdictCard({ result }: Props) {
                 <div className="flex items-center gap-3 mb-2">
                   <IconWarning className="w-7 h-7" style={{ color }} />
                   <span className="font-display font-800 text-4xl tracking-tight" style={{ fontFamily: 'Outfit', fontWeight: 800, color }}>
-                    {result.verdict}
+                    {verdictLabel}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-                    style={{ background: isScam ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)', border: `1px solid ${isScam ? 'rgba(239,68,68,0.25)' : 'rgba(74,222,128,0.25)'}` }}>
-                    <IconShield className="w-3.5 h-3.5" style={{ color }} />
-                    <span className="text-sm font-600" style={{ fontFamily: 'Outfit', fontWeight: 600, color: isScam ? '#fca5a5' : '#86efac' }}>
-                      {result.confidence}% Confidence
-                    </span>
-                  </div>
-                  <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${result.confidence}%`, background: isScam ? 'linear-gradient(90deg, #ef4444, #f87171)' : 'linear-gradient(90deg, #4ade80, #86efac)' }} />
-                  </div>
-                </div>
+  <div className="flex flex-col gap-3">
+
+  {/* Confidence */}
+  <div className="flex items-center gap-3">
+    <div
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+      style={{
+        background: isScam
+          ? 'rgba(239,68,68,0.1)'
+          : isSuspicious
+            ? 'rgba(250,204,21,0.1)'
+            : 'rgba(74,222,128,0.1)',
+        border: `1px solid ${
+          isScam
+            ? 'rgba(239,68,68,0.25)'
+            : isSuspicious
+              ? 'rgba(250,204,21,0.25)'
+              : 'rgba(74,222,128,0.25)'
+        }`
+      }}
+    >
+      <IconShield
+        className="w-3.5 h-3.5"
+        style={{ color }}
+      />
+
+      <span
+        className="text-sm font-600"
+        style={{
+          fontFamily: 'Outfit',
+          fontWeight: 600,
+          color: isScam
+            ? '#fca5a5'
+            : isSuspicious
+              ? '#fde68a'
+              : '#86efac'
+        }}
+      >
+        {result.confidence}% Confidence
+      </span>
+    </div>
+
+    <div
+      className="w-24 h-1.5 rounded-full overflow-hidden"
+      style={{
+        background: 'rgba(255,255,255,0.08)'
+      }}
+    >
+      <div
+        className="h-full rounded-full"
+        style={{
+          width: `${result.confidence}%`,
+          background: isScam
+            ? 'linear-gradient(90deg, #ef4444, #f87171)'
+            : isSuspicious
+              ? 'linear-gradient(90deg, #eab308, #fde047)'
+              : 'linear-gradient(90deg, #4ade80, #86efac)'
+        }}
+      />
+    </div>
+  </div>
+
+  {/* Risk Score */}
+  {riskScoreDisplay !== null && (
+    <div
+      className="text-xs"
+      style={{
+        fontFamily: 'JetBrains Mono',
+        color: '#94a3b8'
+      }}
+    >
+      Risk Score:{' '}
+      <span style={{ color }}>
+        {riskScoreDisplay}/100
+      </span>
+    </div>
+  )}
+
+</div>
               </div>
             </div>
 

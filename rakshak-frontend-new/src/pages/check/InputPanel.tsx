@@ -17,19 +17,30 @@ export default function InputPanel({ onSubmit, analyzing }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [audioFile, setAudioFile]       = useState<File | null>(null)
   const [isDraggingImage, setIsDragging] = useState(false)
+  const [validationError, setValidationError] = useState('')
   const imageRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLInputElement>(null)
 
   const handleImageFile = (file: File) => {
-    if (!file.type.startsWith('image/')) return
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
+  if (!file.type.startsWith('image/')) {
+    setValidationError('Please select a valid image file.')
+    return
   }
 
+  setValidationError('')
+  setImageFile(file)
+  setImagePreview(URL.createObjectURL(file))
+}
+
   const handleAudioFile = (file: File) => {
-    if (!file.type.startsWith('audio/')) return
-    setAudioFile(file)
+  if (!file.type.startsWith('audio/')) {
+    setValidationError('Please select a valid audio file.')
+    return
   }
+
+  setValidationError('')
+  setAudioFile(file)
+}
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
@@ -39,13 +50,37 @@ export default function InputPanel({ onSubmit, analyzing }: Props) {
   }
 
   const handleSubmit = () => {
-    if (mode === 'text')  onSubmit({ mode: 'text', text })
-    if (mode === 'image' && imageFile) onSubmit({ mode: 'image', file: imageFile })
-    if (mode === 'voice' && audioFile) onSubmit({ mode: 'voice', file: audioFile })
-    // For image/voice: if no file selected, still trigger with text fallback
-    if (mode === 'image' && !imageFile) onSubmit({ mode: 'text', text: '' })
-    if (mode === 'voice' && !audioFile) onSubmit({ mode: 'text', text: '' })
+  setValidationError('')
+
+  if (mode === 'text') {
+    if (!text.trim()) {
+      setValidationError('Please enter a message to analyze.')
+      return
+    }
+
+    onSubmit({ mode: 'text', text })
+    return
   }
+
+  if (mode === 'image') {
+    if (!imageFile) {
+      setValidationError('Please select an image before checking.')
+      return
+    }
+
+    onSubmit({ mode: 'image', file: imageFile })
+    return
+  }
+
+  if (mode === 'voice') {
+    if (!audioFile) {
+      setValidationError('Please select an audio file before checking.')
+      return
+    }
+
+    onSubmit({ mode: 'voice', file: audioFile })
+  }
+}
 
   const tabs = [
     { id: 'text'  as InputMode, label: 'Text',  icon: <IconText  className="w-3.5 h-3.5" /> },
@@ -60,7 +95,10 @@ export default function InputPanel({ onSubmit, analyzing }: Props) {
         {/* Tabs */}
         <div className="flex items-center gap-1 px-5 pt-5 pb-0">
           {tabs.map(tab => (
-            <button key={tab.id} onClick={() => setMode(tab.id)}
+            <button key={tab.id} onClick={() => {
+              setMode(tab.id)
+              setValidationError('')
+            }}
               className="flex items-center gap-2 px-4 py-2.5 rounded-t-lg text-sm transition-all duration-200"
               style={{
                 fontFamily:   'Inter',
@@ -83,6 +121,7 @@ export default function InputPanel({ onSubmit, analyzing }: Props) {
               <textarea
                 value={text}
                 onChange={e => setText(e.target.value)}
+                maxLength={5000}
                 placeholder="Paste a suspicious message, e.g. an SMS or an email..."
                 rows={5}
                 className="w-full bg-transparent resize-none text-sm text-slate-300 placeholder-slate-600 outline-none leading-relaxed"
@@ -180,6 +219,19 @@ export default function InputPanel({ onSubmit, analyzing }: Props) {
             </>
           )}
         </div>
+
+        {validationError && (
+  <div
+    className="px-5 pb-4 text-sm"
+    style={{
+      fontFamily: 'Inter',
+      color: '#fca5a5',
+    }}
+    role="alert"
+  >
+    {validationError}
+  </div>
+)}
 
         {/* Submit */}
         <div className="px-5 pb-5 flex justify-end">

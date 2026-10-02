@@ -179,6 +179,28 @@ function AnalysisTab({
   reasons: string[]
   riskFactors: AnalysisResult['riskFactors']
 }) {
+  const verdict = String(
+    result?.verdict ?? 'unknown',
+  )
+    .trim()
+    .toLowerCase()
+
+  const isScam = verdict === 'scam'
+  const isSuspicious = verdict === 'suspicious'
+  const isSafe = verdict === 'safe'
+
+  const verdictColor = isScam
+    ? '#f87171'
+    : isSuspicious
+      ? '#facc15'
+      : isSafe
+        ? '#4ade80'
+        : '#94a3b8'
+
+  const VerdictIcon = isSafe
+    ? IconCheck
+    : IconWarning
+
   return (
     <div className="space-y-10">
       <div className="grid grid-cols-5 gap-8">
@@ -188,7 +210,10 @@ function AnalysisTab({
         <div className="col-span-3 space-y-6">
           <div>
             <div className="flex items-center gap-2.5 mb-3">
-              <IconWarning className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <VerdictIcon
+  className="w-5 h-5 flex-shrink-0"
+  style={{ color: verdictColor }}
+/>
 
               <div>
                 <div
@@ -202,14 +227,15 @@ function AnalysisTab({
                 </div>
 
                 <div
-                  className="font-display text-xl text-red-400"
-                  style={{
-                    fontFamily: 'Outfit',
-                    fontWeight: 700,
-                  }}
-                >
-                  {result?.verdict || 'unknown'}
-                </div>
+  className="font-display text-xl"
+  style={{
+    fontFamily: 'Outfit',
+    fontWeight: 700,
+    color: verdictColor,
+  }}
+>
+  {verdict}
+</div>
               </div>
             </div>
 
@@ -388,41 +414,77 @@ function AnalysisTab({
 
           {/* RECOMMENDED ACTION */}
 
-          <div
-            className="mt-4 p-4 rounded-xl"
-            style={{
-              background:
-                'rgba(34,197,94,0.05)',
-              border:
-                '1px solid rgba(34,197,94,0.15)',
-            }}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <IconCheck className="w-4 h-4 text-green-400" />
+         <div
+  className="mt-4 p-4 rounded-xl"
+  style={{
+    background: isScam
+      ? 'rgba(239,68,68,0.05)'
+      : isSuspicious
+        ? 'rgba(250,204,21,0.05)'
+        : isSafe
+          ? 'rgba(34,197,94,0.05)'
+          : 'rgba(148,163,184,0.05)',
 
-              <span
-                className="text-green-400 text-xs font-600 uppercase tracking-wider"
-                style={{
-                  fontFamily: 'Outfit',
-                }}
-              >
-                Recommended Action
-              </span>
-            </div>
+    border: isScam
+      ? '1px solid rgba(239,68,68,0.15)'
+      : isSuspicious
+        ? '1px solid rgba(250,204,21,0.15)'
+        : isSafe
+          ? '1px solid rgba(34,197,94,0.15)'
+          : '1px solid rgba(148,163,184,0.15)',
+  }}
+>
+  <div className="flex items-center gap-2 mb-2">
 
-            <p
-              className="text-slate-400 text-xs leading-relaxed"
-              style={{
-                fontFamily: 'Inter',
-              }}
-            >
-              Do not click links, send money,
-              share OTPs, passwords, or other
-              sensitive information. Verify the
-              request through the organization's
-              official channel.
-            </p>
-          </div>
+    {isSafe ? (
+      <IconCheck
+        className="w-4 h-4 text-green-400"
+      />
+    ) : (
+      <IconWarning
+        className={`w-4 h-4 ${
+          isScam
+            ? 'text-red-400'
+            : isSuspicious
+              ? 'text-yellow-400'
+              : 'text-slate-400'
+        }`}
+      />
+    )}
+
+    <span
+      className={`text-xs font-600 uppercase tracking-wider ${
+        isScam
+          ? 'text-red-400'
+          : isSuspicious
+            ? 'text-yellow-400'
+            : isSafe
+              ? 'text-green-400'
+              : 'text-slate-400'
+      }`}
+      style={{
+        fontFamily: 'Outfit',
+      }}
+    >
+      Recommended Action
+    </span>
+  </div>
+
+  <p
+    className="text-slate-400 text-xs leading-relaxed"
+    style={{
+      fontFamily: 'Inter',
+    }}
+  >
+    {isScam
+      ? 'Do not click links, send money, share OTPs, passwords, or other sensitive information. Verify the request through the organization&apos;s official channel.'
+      : isSuspicious
+        ? 'Proceed cautiously. Do not share sensitive information or make payments until the request has been independently verified through the organization&apos;s official channel.'
+        : isSafe
+          ? 'No strong scam indicators were detected. Continue normal verification practices and use official channels for sensitive account activity.'
+          : 'Review the message carefully and verify the request through the organization&apos;s official channel.'}
+  </p>
+        </div>
         </div>
       </div>
     </div>
@@ -600,6 +662,16 @@ function LinksTab({
         )
           ? link.flags
           : []
+          const linkRisk = String(
+    link?.riskLevel ?? 'unknown',
+  )
+    .trim()
+    .toLowerCase()
+
+  const isHighRisk = linkRisk === 'high'
+  const isMediumRisk = linkRisk === 'medium'
+  const isLowRisk = linkRisk === 'low'
+
 
         return (
           <div
@@ -660,18 +732,36 @@ function LinksTab({
               </div>
 
               <span
-                className="px-3 py-1 rounded-lg text-xs font-600 text-red-300"
+                className="px-3 py-1 rounded-lg text-xs font-600"
                 style={{
                   fontFamily:
                     'JetBrains Mono',
-                  background:
-                    'rgba(239,68,68,0.1)',
-                  border:
-                    '1px solid rgba(239,68,68,0.25)',
+
+                    color: isHighRisk
+      ? '#fca5a5'
+      : isMediumRisk
+        ? '#fde68a'
+        : isLowRisk
+          ? '#86efac'
+          : '#cbd5e1',
+                  background: isHighRisk
+      ? 'rgba(239,68,68,0.1)'
+      : isMediumRisk
+        ? 'rgba(234,179,8,0.1)'
+        : isLowRisk
+          ? 'rgba(34,197,94,0.1)'
+          : 'rgba(148,163,184,0.1)',
+
+                  border: isHighRisk
+      ? '1px solid rgba(239,68,68,0.25)'
+      : isMediumRisk
+        ? '1px solid rgba(234,179,8,0.25)'
+        : isLowRisk
+          ? '1px solid rgba(34,197,94,0.25)'
+          : '1px solid rgba(148,163,184,0.2)',
                 }}
               >
-                {link?.riskLevel ??
-                  'unknown'}
+                {linkRisk}
               </span>
             </div>
 

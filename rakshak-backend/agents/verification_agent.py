@@ -64,6 +64,9 @@ def combine_verdicts(pattern_result, link_result):
     if combined_score >= 0.75:
         final_verdict = "scam"
 
+    elif pattern_verdict == "suspicious":
+        final_verdict = "suspicious"
+
     elif combined_score >= 0.4:
         final_verdict = "suspicious"
 
@@ -203,6 +206,20 @@ IMPORTANT:
 - Verify every factual claim in the Pattern Agent reason against the actual message.
 - Do not repeat a claim from the Pattern Agent reason if that claim is not supported by the actual message or the retrieved patterns.
 - In particular, do not claim that the message contains KYC, account blocking, deactivation, payment, OTP, credentials, or a verification link unless that information is actually present in the message.
+- Retrieved scam patterns are reference examples, not proof that the actual message contains their described behavior.
+- Never treat a retrieved pattern name as evidence that the message matches that specific scam mechanism.
+- If the actual message contains a fact, do not describe that fact as absent.
+- If the actual message does not contain a URL, do not mention a link, website, or verification link.
+- If the actual message contains urgency, do not say that urgency is absent.
+- If a retrieved pattern is relevant but the actual message does not establish its core mechanism, explicitly distinguish the retrieved pattern from the actual message.
+- For a SAFE result, explain why the actual message appears legitimate or lacks a clear scam mechanism; do not merely list scam indicators that are absent.
+
+- Retrieved scam patterns are reference examples, not proof that the actual message matches them.
+- The final explanation must prioritize facts in the Actual message over facts mentioned in Pattern Analysis.
+- If Pattern Analysis contains a factual claim that conflicts with the Actual message or Link Analysis, do not repeat that claim.
+- Never describe Link Analysis as confirming suspiciousness when urls_found is 0.
+- Never describe confidence as high unless the supplied confidence is actually high; do not use qualitative confidence labels.
+- For a SUSPICIOUS verdict, name the actual risk signals present in the message and explain that they are concerning but do not establish a clear scam mechanism.
 
 Retrieved scam patterns:
 {retrieved_patterns_text}
@@ -221,10 +238,12 @@ Write exactly ONE short sentence explaining the final verdict using only
 the evidence above.
 
 For a SAFE verdict:
-- Prefer mentioning that no relevant scam pattern was retrieved and/or
-  no suspicious URL risk was detected.
-- If no retrieved scam patterns are provided, do not claim that the message matches a named scam pattern.
-- If the Pattern Analysis reason mentions a pattern that is not present in Retrieved scam patterns, do not repeat that claim.
+- Explain the actual message as a legitimate or routine notification when the message supports that interpretation.
+- State the concrete reason it does not establish a scam mechanism.
+- Do not treat a retrieved scam pattern as proof of a match.
+- If a scam pattern was retrieved but the actual message does not contain its core mechanism, explicitly say that the retrieved pattern was not established by the actual message.
+- Do not claim that a fact is absent if that fact is actually present in the message.
+- Do not mention a URL, link, payment request, OTP, credential request, KYC request, account-blocking threat, or urgency as absent unless the actual message was checked for that fact.
 
 For a SCAM verdict:
 - Prefer mentioning the relevant retrieved scam-pattern evidence and
@@ -232,14 +251,12 @@ For a SCAM verdict:
 - If urls_found is 0, do NOT mention a detected link or suspicious URL.
 
 For a SUSPICIOUS verdict:
-
-- Describe the actual risk signals that contributed to the suspicious classification.
-- If retrieved scam patterns are present, explicitly acknowledge that relevant scam-pattern evidence was retrieved.
-- Do NOT say that no relevant scam pattern was detected when retrieved_patterns is non-empty.
-- If the message does not contain a URL, do not claim that a URL or suspicious link was detected.
-- If the retrieved patterns are present but the evidence is not strong enough for a scam verdict, explain that the message shows some characteristics of the retrieved scam patterns but does not establish a clear scam mechanism.
-- Do not claim that the message matches a pattern unless the actual message supports that claim.
-- Describe the evidence without claiming certainty.
+- Describe the actual risk signals present in the message.
+- If retrieved scam patterns are present, acknowledge them only as reference evidence.
+- Do not claim that the message contains the full mechanism of a retrieved pattern unless the actual message supports that claim.
+- Do not mention a URL or suspicious link unless urls_found is greater than 0.
+- Do not say that urgency is absent when the actual message contains an urgency signal.
+- Explain that the evidence is concerning but does not establish a clear scam mechanism when that is why the result is suspicious.
 
 Do not describe a confidence value as "low" or "high".
 Do not mention internal model names.
@@ -385,19 +402,18 @@ Risk score consistency:
 
                     if link_result["urls_found"] == 0:
                         explanation = (
-                            f"The message was classified as suspicious because "
-                            f"it contains risk signals related to the retrieved "
-                            f"{pattern_name} pattern, but the available evidence "
-                            f"was not strong enough to classify it as a scam; "
-                            f"no URL was detected in the message."
-                       )
+                            "The message was classified as suspicious because it "
+                            "contains some concerning risk signals, but the available "
+                            "evidence does not establish a clear scam mechanism; "
+                            "no URL was detected in the message."
+                        )
                     else:
                         explanation = (
-                f"The message was classified as suspicious because "
-                f"it contains risk signals related to the retrieved "
-                f"{pattern_name} pattern, but the available evidence "
-                f"was not strong enough to classify it as a scam; "
-                f"{link_result['urls_found']} URL(s) were detected."
+                "The message was classified as suspicious because it "
+                "contains some concerning risk signals and "
+                f"{link_result['urls_found']} URL(s) were detected, "
+                "but the available evidence does not establish a clear "
+                "scam mechanism."
             )
 
                 else:
@@ -435,10 +451,29 @@ Risk score consistency:
 
         else:
 
-            explanation = (
-                "The message was classified as suspicious based on "
-                "the available pattern and link analysis."
-            )
+            pattern_reason = pattern_result.get("reason", "").strip()
+
+            if not pattern_reason:
+                pattern_reason = (
+                    "it contains some concerning risk signals, but the available "
+                    "evidence does not establish a clear scam mechanism"
+                )
+
+            if link_result["urls_found"] > 0:
+                explanation = (
+                    f"The message was classified as suspicious because "
+                    f"{pattern_reason}. "
+                    f"It also contains {link_result['urls_found']} URL(s). "
+                    "The available evidence does not establish a clear "
+                    "scam mechanism."
+                )
+            else:
+                explanation = (
+                    f"The message was classified as suspicious because "
+                    f"{pattern_reason}. "
+                    "The available evidence does not establish a clear "
+                    "scam mechanism."
+                )
 
     # ========================================================
     # 7. TOTAL VERIFICATION TIME

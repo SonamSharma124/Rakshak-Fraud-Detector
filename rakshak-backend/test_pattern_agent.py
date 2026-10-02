@@ -1,6 +1,6 @@
 from agents.pattern_agent import analyze_pattern
 
-result = analyze_pattern("Please send the documents to my new email address as soon as possible, it's urgent.")
+result = analyze_pattern("Your bank account will be blocked today. Complete KYC immediately at http://bank-kyc.example/verify.")
 
 print("Verdict:", result["verdict"])
 print("Confidence:", result["confidence"])

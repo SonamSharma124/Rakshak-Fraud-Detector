@@ -93,6 +93,7 @@ export type TraceResult = {
 export type AnalysisResult = {
   verdict: string
   confidence: number
+  riskScore: number | null
   traceId: string
   checkedAt: string
   inputPreview: string
@@ -833,6 +834,11 @@ export function normalizeAnalysisResult(
       backend.explanation_estimated_cost ??
       0,
     )
+  const riskScore =
+  raw.risk_score !== undefined &&
+  raw.risk_score !== null
+    ? toFiniteNumber(raw.risk_score)
+    : null
 
   /*
    * Explanation
@@ -1049,40 +1055,11 @@ const explanation =
     })
   }
 
-  if (
-    groundedness !== null &&
-    groundedness !== undefined
-  ) {
-    const score =
-      toFiniteNumber(
-        groundedness,
-      )
-
-    riskFactors.push({
-      label:
-        `Groundedness score: ${score}`,
-      level:
-        score >= 0.75
-          ? 'high'
-          : score >= 0.4
-            ? 'medium'
-            : 'low',
-    })
-  }
 
   const keywords =
-    safeStringArray(
-      pattern.groundedness_matched_keywords,
-    )
-
-  if (keywords.length > 0) {
-    riskFactors.push({
-      label:
-        `Matched keywords: ${keywords.join(', ')}`,
-      level: 'medium',
-    })
-  }
-
+  safeStringArray(
+    pattern.groundedness_matched_keywords,
+  )
   const urlsFound =
     toFiniteNumber(
       link.urls_found,
@@ -1184,6 +1161,8 @@ const explanation =
       confidenceToPercent(
         confidence,
       ),
+
+      riskScore,
 
     traceId:
       String(traceId),
